@@ -5,12 +5,6 @@ dormancy
 
 <!-- badges: start -->
 <!-- badges: end -->
-The goal of dormancy is to ...
+The goal of this project is to predict the end of dormancy in several trees species.
 
-Installation
-------------
-
-You can install the released version of dormancy from [CRAN](https://CRAN.R-project.org) with:
-
-Example
--------
+TO BE COMPLETED
