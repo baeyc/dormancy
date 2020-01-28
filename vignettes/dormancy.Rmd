@@ -1,0 +1,10 @@
+---
+title: "dormancy"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{dormancy}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Here is a quick start guide
