@@ -24,16 +24,17 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
                    control = list(proposal="AdGl",
                                   size=100000)){
   # Initialize algorithm
-  cat("Initialize MCMC algorithm ...")
+  cat("Initialize MCMC algorithm...\n")
   names.params <- names(priors)
   init.state <- sapply(1:length(names.params), FUN = function(i){do.call(priors[[i]]@distRNG, c(list(n = 1), priors[[i]]@hyperParams))})
   names(init.state) <- names.params
   p <- length(names.params)
   print(init.state)
 
+  proposal <- control$proposal
+
   mean.chain <- init.state
   var.chain <- diag((2.38/sqrt(p))*rep(1,p))
-  alpha.optim <- ifelse(control$proposal=="AdGl", 0.234, 0.44)
   lambda <- rep(1,p)
   stoch.step.power <- 0.6
   accept.rates <- matrix(rep(0,p),nr=1,nc=p)
@@ -56,12 +57,21 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
   pb <- txtProgressBar(min=1,max=control$size,style = 3)
   for (m in 1:control$size){
     setTxtProgressBar(pb,m)
+
+    if (control$proposal == "random") proposal <- sample(c("AdGl","CWAdCW","GlAdCW"),1)
+
+    alpha.optim <- ifelse(proposal=="AdGl", 0.234, 0.44)
+
     # generate candidate
-    if (control$proposal == "AdGl"){
-      candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], diag(lambda)%*%var.chain)) # in the AdGl case, lambda has the same value on all its components
-    }else if (control$proposal == "AdCW"){
+    if (proposal == "AdGl"){
+      candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], lambda[1]*var.chain)) # in the AdGl case, lambda has the same value on all its components
+    }else if (proposal == "GlAdCW"){
       lambda.sqrt.mat <- diag(sqrt(lambda))
-      candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], lambda.sqrt.mat%*%var.chains%*%lambda.sqrt.mat))
+      candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], lambda.sqrt.mat%*%var.chain%*%lambda.sqrt.mat))
+    }else if (proposal == "CWAdCW"){
+      k <- sample(p,1)
+      candidate <- chain[m,]
+      candidate[k] <- candidate[k] + rnorm(1,0,sqrt(lambda[k]*var.chain[k,k]))
     }
 
     # MH ratio
@@ -77,7 +87,7 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
                                                                         do.call(dname, c(list(x = candidate[i]), priors[[i]]@hyperParams))})
     prior.candidate <- prod(prior.candidate)
 
-    ratio <- (likelihood.candidate*prior.candidate)/(likelihood.current*prior.current) # symetric RW
+    ratio <- min(1,(likelihood.candidate*prior.candidate)/(likelihood.current*prior.current)) # symetric RW
 
     # Set next state of the chain
     if (is.na(ratio)){
@@ -93,16 +103,41 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
       }
     }
 
-    accept.rates <- rbind(accept.rates,(accept.rates[m,]*(m-1) + (!is.na(ratio) & u <= ratio))/(m))
+    accept.rates <- rbind(accept.rates,1*(next.state!=chain[m,]))
     chain <- rbind(chain,next.state)
 
     # Update params of MCMC sampler
-    stoch.step <- 1/(m^stoch.step.power)
-    mean.chain <- mean.chain + stoch.step * (next.state - mean.chain)
+    stoch.step <- 1/((m+1)^stoch.step.power)
     var.chain <- var.chain + stoch.step * ((next.state-mean.chain)%*%t(next.state-mean.chain) - var.chain)
+    mean.chain <- mean.chain + stoch.step * (next.state - mean.chain)
 
-    lambda <- lambda * exp(stoch.step*(accept.rates[m+1,] - alpha.optim))
+    # Adapting lambda
+    if (proposal == "AdGl"){
+      lambda <- lambda * exp(stoch.step*(ratio - alpha.optim))
+    }else if (proposal == "CWAdCW"){
+      lambda[k] <- lambda[k] * exp(stoch.step*(ratio - alpha.optim))
+    }else if (proposal == "GlAdCW"){
+      for (k in 1:p){
+        candidate.cw <- chain[m,]
+        candidate.cw[k] <- candidate[k]
+        pij <- modelProbaBB(temp.data = data$temp.data,
+                            var.names = data$var.names,
+                            origin.date = origin.date,
+                            temp.params = temp.params,
+                            stats::setNames(as.list(candidate.cw),names.params))
+        pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
+        likelihood.candidate.cw <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
+        prior.candidate.cw <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
+                              substr(dname,1,1) <- "d"
+                              do.call(dname, c(list(x = candidate.cw[i]), priors[[i]]@hyperParams))})
+        prior.candidate.cw <- prod(prior.candidate.cw)
+
+        ratio.cw <- min(1,(likelihood.candidate.cw*prior.candidate.cw)/(likelihood.current*prior.current)) # symetric RW
+
+        lambda[k] <- lambda[k] * exp(stoch.step*(ratio.cw - alpha.optim))
+      }
+    }
   }
 
-  return(list(chain=chain,ar=accept.rates,lambda=lambda))
+  return(list(chain=chain,ar=apply(accept.rates,2,cumsum)/nrow(accept.rates),lambda=lambda))
 }
