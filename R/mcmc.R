@@ -138,5 +138,5 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
     }
   }
 
-  return(list(chain=chain,ar=apply(accept.rates,2,cumsum)/nrow(accept.rates),lambda=lambda))
+  return(list(chain=chain,ar=apply(accept.rates,2,cumsum)/nrow(accept.rates),lambda=lambda,mean.and.var=list(mean.chain,var.chain)))
 }
