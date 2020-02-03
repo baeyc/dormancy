@@ -20,7 +20,7 @@ priors = list(a.cu = prior(distRNG="runif", hyperParams=list(min=-5, max=5)),
 temp.data <- readRDS("data/temperaturePlants.rds")
 
 # Loop over species
-for (f in files){
+for (f in files[1]){
   obs.data <- readRDS(paste0("data/",f))
 
   calib <- mcmc(data = list(obs.data=obs.data,
@@ -28,11 +28,12 @@ for (f in files){
                             var.names=var.names),
                 temp.params = temp.params,
                 origin.date = "09-01",
-                control = list(proposal="AdGl",
+                control = list(proposal="random",
                                size = 10))
 
   species <- gsub("obs.data.","",f)
   species <- gsub(".rds","",species)
 
-  saveRDS(calib,"data/results_",species,".rds")
+  saveRDS(calib,paste0("data/results_",species,".rds"))
 }
+
