@@ -58,10 +58,10 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
     setTxtProgressBar(pb,m)
     # generate candidate
     if (control$proposal == "AdGl"){
-      candidate <- mvtnorm::rmvnorm(1, chain[m,], diag(lambda)%*%var.chain) # in the AdGl case, lambda has the same value on all its components
+      candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], diag(lambda)%*%var.chain)) # in the AdGl case, lambda has the same value on all its components
     }else if (control$proposal == "AdCW"){
       lambda.sqrt.mat <- diag(sqrt(lambda))
-      candidate <- mvtnorm::rmvnorm(1, chain[m,], lambda.sqrt.mat%*%var.chains%*%lambda.sqrt.mat)
+      candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], lambda.sqrt.mat%*%var.chains%*%lambda.sqrt.mat))
     }
 
     # MH ratio
@@ -99,7 +99,7 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
     # Update params of MCMC sampler
     stoch.step <- 1/(m^stoch.step.power)
     mean.chain <- mean.chain + stoch.step * (next.state - mean.chain)
-    var.chain <- var.chain + stoch.step * (t(next.state-mean.chain)%*%(next.state-mean.chain) - var.chain)
+    var.chain <- var.chain + stoch.step * ((next.state-mean.chain)%*%t(next.state-mean.chain) - var.chain)
 
     lambda <- lambda * exp(stoch.step*(accept.rates[m+1,] - alpha.optim))
   }

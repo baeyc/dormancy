@@ -8,7 +8,7 @@ species <- gsub("obs.data.","",files)
 species <- gsub(".rds","",species)
 
 # Parameters shared by all the species
-rigin.date = "09-01"
+origin.date = "09-01"
 var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant")
 temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu = 35)
 priors = list(a.cu = prior(distRNG="runif", hyperParams=list(min=-5, max=5)),
@@ -29,7 +29,7 @@ for (f in files){
                 temp.params = temp.params,
                 origin.date = "09-01",
                 control = list(proposal="AdGl",
-                               size = 100))
+                               size = 10))
 
   species <- gsub("obs.data.","",f)
   species <- gsub(".rds","",species)
