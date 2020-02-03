@@ -29,10 +29,10 @@ for (f in files){
                 temp.params = temp.params,
                 origin.date = "09-01",
                 control = list(proposal="AdGl",
-                               size = 10))
+                               size = 100))
 
   species <- gsub("obs.data.","",f)
   species <- gsub(".rds","",species)
 
-  saveRDS(calib,"data/results_",species,".rds")
+  saveRDS(calib,paste0("data/results_",species,".rds"))
 }
