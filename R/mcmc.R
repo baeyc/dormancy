@@ -63,44 +63,43 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
     alpha.optim <- ifelse(proposal=="AdGl", 0.234, 0.44)
 
     # generate candidate
-    if (proposal == "AdGl"){
-      candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], lambda[1]*var.chain)) # in the AdGl case, lambda has the same value on all its components
-    }else if (proposal == "GlAdCW"){
-      lambda.sqrt.mat <- diag(sqrt(lambda))
-      candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], lambda.sqrt.mat%*%var.chain%*%lambda.sqrt.mat))
-    }else if (proposal == "CWAdCW"){
-      k <- sample(p,1)
-      candidate <- chain[m,]
-      candidate[k] <- candidate[k] + rnorm(1,0,sqrt(lambda[k]*var.chain[k,k]))
+    ratio <- NA
+    while(is.na(ratio) | is.infinite(ratio)){
+      if (proposal == "AdGl"){
+        candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], lambda[1]*var.chain)) # in the AdGl case, lambda has the same value on all its components
+      }else if (proposal == "GlAdCW"){
+        lambda.sqrt.mat <- diag(sqrt(lambda))
+        candidate <- as.vector(mvtnorm::rmvnorm(1, chain[m,], lambda.sqrt.mat%*%var.chain%*%lambda.sqrt.mat))
+      }else if (proposal == "CWAdCW"){
+        k <- sample(p,1)
+        candidate <- chain[m,]
+        candidate[k] <- candidate[k] + rnorm(1,0,sqrt(lambda[k]*var.chain[k,k]))
+      }
+
+      # MH ratio
+      pij <- modelProbaBB(temp.data = data$temp.data,
+                          var.names = data$var.names,
+                          origin.date = origin.date,
+                          temp.params = temp.params,
+                          stats::setNames(as.list(candidate),names.params))
+      pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
+      likelihood.candidate <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
+      prior.candidate <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
+                                                                          substr(dname,1,1) <- "d"
+                                                                          do.call(dname, c(list(x = candidate[i]), priors[[i]]@hyperParams))})
+      prior.candidate <- prod(prior.candidate)
+
+      ratio <- min(1,(likelihood.candidate*prior.candidate)/(likelihood.current*prior.current)) # symetric RW
     }
 
-    # MH ratio
-    pij <- modelProbaBB(temp.data = data$temp.data,
-                        var.names = data$var.names,
-                        origin.date = origin.date,
-                        temp.params = temp.params,
-                        stats::setNames(as.list(candidate),names.params))
-    pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
-    likelihood.candidate <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
-    prior.candidate <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
-                                                                        substr(dname,1,1) <- "d"
-                                                                        do.call(dname, c(list(x = candidate[i]), priors[[i]]@hyperParams))})
-    prior.candidate <- prod(prior.candidate)
-
-    ratio <- min(1,(likelihood.candidate*prior.candidate)/(likelihood.current*prior.current)) # symetric RW
-
     # Set next state of the chain
-    if (is.na(ratio)){
-      next.state <- chain[m,]
+    u <- runif(1)
+    if (u<=ratio){
+      next.state <- candidate
+      likelihood.current <- likelihood.candidate
+      prior.current <- prior.candidate
     }else{
-      u <- runif(1)
-      if (u<=ratio){
-        next.state <- candidate
-        likelihood.current <- likelihood.candidate
-        prior.current <- prior.candidate
-      }else{
-        next.state <- chain[m,]
-      }
+      next.state <- chain[m,]
     }
 
     accept.rates <- rbind(accept.rates,1*(next.state!=chain[m,]))
