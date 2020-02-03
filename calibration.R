@@ -28,13 +28,8 @@ for (f in files[1]){
                             var.names=var.names),
                 temp.params = temp.params,
                 origin.date = "09-01",
-<<<<<<< HEAD
                 control = list(proposal="AdGl",
                                size = 100))
-=======
-                control = list(proposal="random",
-                               size = 10))
->>>>>>> 28944d9caef3bb6882cb80d851b410a6ff59518e
 
   species <- gsub("obs.data.","",f)
   species <- gsub(".rds","",species)
