@@ -1,4 +1,8 @@
 # Calibration of the parameters per species
+argv <- commandArgs(TRUE)
+i <- as.numeric(argv[1])
+sizeMC <- as.numeric(argv[2])
+
 devtools::document()
 devtools::load_all()
 
@@ -9,7 +13,7 @@ species <- gsub(".rds","",species)
 
 # Parameters shared by all the species
 origin.date = "09-01"
-var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant")
+var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant",duration="duration")
 temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu = 35)
 priors = list(a.cu = prior(distRNG="runif", hyperParams=list(min=-5, max=5)),
               b.cu = prior(distRNG="runif", hyperParams=list(min=2, max=200)),
@@ -20,20 +24,18 @@ priors = list(a.cu = prior(distRNG="runif", hyperParams=list(min=-5, max=5)),
 temp.data <- readRDS("data/temperaturePlants.rds")
 
 # Loop over species
-for (f in files[1]){
-  obs.data <- readRDS(paste0("data/",f))
 
-  calib <- mcmc(data = list(obs.data=obs.data,
-                            temp.data=temp.data,
-                            var.names=var.names),
-                temp.params = temp.params,
-                origin.date = "09-01",
-                control = list(proposal="AdGl",
-                               size = 100))
+#for (f in files[1]){
+obs.data <- readRDS(paste0("data/",files[i]))
 
-  species <- gsub("obs.data.","",f)
-  species <- gsub(".rds","",species)
+calib <- mcmc(data = list(obs.data=obs.data,
+                          temp.data=temp.data,
+                          var.names=var.names),
+              temp.params = temp.params,
+              control = list(proposal="AdGl",
+                             size = sizeMC))
 
-  saveRDS(calib,paste0("data/results_",species,".rds"))
-}
+species <- gsub("obs.data.","",f)
+species <- gsub(".rds","",species)
 
+saveRDS(calib,paste0("data/results_",species,".rds"))

@@ -6,7 +6,7 @@
 #' @aliases forcing CU
 #'
 #' @param temp.data a data frame with the dates and temperatures to accumulate
-#' @param var.names the name of the temperature and date variables, in the format \code{list(temp="temp.name",date="date.name")}
+#' @param var.names the name of the temperature and date variables, in the format \code{list(temp="temp.name",date="date.name",duration="duration.name")}
 #' @param temp.min the threshold above which the plant is accumulating chilling units
 #' @param temp.max the threshold below which the plant is accumulating chilling units
 #' @param a the temperature at which the plant accumulates half the maximum of forcing units
@@ -19,13 +19,11 @@
 #'
 #' @export forcingUnits
 forcingUnits <- function(temp.data,
-                         var.names=list(temp="temp",date="date"),
+                         var.names=list(temp="temp",date="date",duration="duration"),
                          temp.min=5,temp.max=30,a,b){
-  # get elapsing time between two successive temperature recording
-  duration <- as.double(abs(difftime(temp.data[,var.names$date],dplyr::lead(temp.data[,var.names$date]),units="hours"))) # time in hours elapsing between two successive recordings
 
   x <- temp.data[,var.names$temp]
-  fu <- duration * ifelse(temp.min <= x & x <= temp.max,1/(1+exp(-(x-a)/b)),0)
+  fu <- temp.data[,var.names$duration] * ifelse(temp.min <= x & x <= temp.max,1/(1+exp(-(x-a)/b)),0)
 
   return(fu)
 

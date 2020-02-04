@@ -10,33 +10,27 @@
 #' \code{var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant")}
 #' @param temp.param a list of min and max temperatures for the CU and FU functions, containing \code{temp.min.cu, temp.min.fu,temp.max.cu, temp.max.fu}
 #' @param cufu.params a list of parameters for the CU and FU curves. It must contain the following parameters: \code{a.cu, b.cu, a.fu, b.fu, mu, s}
-#' @param origin.date the origin date when plants start accumulating temperatures, in the format "mm-dd" (e.g. "09-01" for 1st of September)
 #' @return the probability of budburst per plant, repetition and session
 #'
+#' @importFrom dplyr %>%
 #' @export modelProbaBB
 modelProbaBB <- function(temp.data,
                          var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant"),
                          temp.params,
-                         cufu.params,origin.date="09-01"){
+                         cufu.params){
   # create a copy of temp.data
   data <- temp.data
 
   # compute CU and FU
   data$cu <- chillingUnits(data,
-                           var.names = list(temp=var.names$temp,date=var.names$date),
+                           var.names = list(temp=var.names$temp,date=var.names$date,duration=var.names$duration),
                            temp.min = temp.params$temp.min.cu, temp.max= temp.params$temp.max.cu,
                            mu = cufu.params$a.cu, s = cufu.params$b.cu)
   data$fu <- forcingUnits(data,
-                          var.names = list(temp=var.names$temp,date=var.names$date),
+                          var.names = list(temp=var.names$temp,date=var.names$date,duration=var.names$duration),
                           temp.min = temp.params$temp.min.fu, temp.max= temp.params$temp.max.fu,
                           a = cufu.params$a.fu, b = cufu.params$b.fu)
 
-  # compute accumulation from origin date
-  # add origin
-  year <- lubridate::year(data[,var.names$date])
-  dateOrigin <- paste0(year,"-",origin.date)
-  doyOrigin <- lubridate::yday(lubridate::as_date(dateOrigin))
-  data$before.origin <- ifelse(lubridate::yday(data$date) < doyOrigin, TRUE, FALSE)
   # do not account for temperatures accumulated between 01/01 and origin.date
   data$fu[data$before.origin] <- 0
   data$cu[data$before.origin] <- 0

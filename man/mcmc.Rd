@@ -13,8 +13,7 @@ mcmc(data = list(obs.data = obs.data, temp.data = temp.plants, var.names
   "runif", hyperParams = list(min = 1, max = 20)), mu = prior(distRNG =
   "rnorm", hyperParams = list(mean = 1500, sd = 1000)), s = prior(distRNG =
   "rnorm", hyperParams = list(mean = 750, sd = 500))),
-  origin.date = "09-01", control = list(proposal = "AdGl", size =
-  1e+05))
+  control = list(proposal = "AdGl", size = 1e+05))
 }
 \arguments{
 \item{data}{a list containing the plant and temperatures data}
@@ -23,9 +22,9 @@ mcmc(data = list(obs.data = obs.data, temp.data = temp.plants, var.names
 
 \item{priors}{a list with the priors on the parameters}
 
-\item{origin.date}{the date to be used as the origin when computing cumulative sum of temperatures}
-
 \item{control}{a list of options for the algorithm}
+
+\item{origin.date}{the date to be used as the origin when computing cumulative sum of temperatures}
 }
 \description{
 HELP PAGE TO WRITE --

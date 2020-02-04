@@ -30,11 +30,20 @@ var.names.deb <- list(session="session",plant="Individu",harv="date_collecte",bu
 # Extract temperatures experienced by each plant
 temp.plants <- extractTemp(temp.outside,temp.inside,var.names.out,var.names.in,data.deb,var.names.deb)
 
+# add origin
+origin.date <- "09-01"
+year <- lubridate::year(temp.plants$date)
+dateOrigin <- paste0(year,"-",origin.date)
+doyOrigin <- lubridate::yday(lubridate::as_date(dateOrigin))
+temp.plants$before.origin <- ifelse(lubridate::yday(temp.plants$date) < doyOrigin, TRUE, FALSE)
+
+# get elapsing time between two successive temperature recording
+duration <- as.double(abs(difftime(temp.plants$date,dplyr::lead(temp.plants$date),units="hours"))) # time in hours elapsing between two successive recordings
+temp.plants$duration <- duration
 
 # Compute the probability of budburst for each plant, as a function of accumulated CU and FU
 probaBB <- modelProbaBB(temp.data = temp.plants,
-                        origin.date = "09-01",
-                        var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant"),
+                        var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant",duration="duration"),
                         temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu = 35),
                         cufu.params = list(a.cu = 5, b.cu = 5, a.fu = 15, b.fu = 4, mu = 1500, s = 750))
 

@@ -8,7 +8,6 @@
 #' @param data a list containing the plant and temperatures data
 #' @param temp.params a list with the fixed parameters giving the minimum and maximum temperatures for computing chilling and forcing units
 #' @param priors a list with the priors on the parameters
-#' @param origin.date the date to be used as the origin when computing cumulative sum of temperatures
 #' @param control a list of options for the algorithm
 #'
 #' @export mcmc
@@ -20,7 +19,6 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
                                  b.fu = prior(distRNG="runif", hyperParams=list(min=1, max=20)),
                                  mu = prior(distRNG="rnorm", hyperParams=list(mean=1500, sd=1000)),
                                  s = prior(distRNG="rnorm", hyperParams=list(mean=750, sd=500))),
-                   origin.date="09-01",
                    control = list(proposal="AdGl",
                                   size=100000)){
   # Initialize algorithm
@@ -42,9 +40,8 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
   # Compute likelihood and priors values for initial state
   pij <- modelProbaBB(temp.data = data$temp.data,
                       var.names = data$var.names,
-                      origin.date = origin.date,
                       temp.params = temp.params,
-                      stats::setNames(as.list(init.state),names.params))
+                      cufu.params =stats::setNames(as.list(init.state),names.params))
   pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
   likelihood.current <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
   prior.current <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
@@ -79,7 +76,6 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
       # MH ratio
       pij <- modelProbaBB(temp.data = data$temp.data,
                           var.names = data$var.names,
-                          origin.date = origin.date,
                           temp.params = temp.params,
                           stats::setNames(as.list(candidate),names.params))
       pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
@@ -121,7 +117,6 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
         candidate.cw[k] <- candidate[k]
         pij <- modelProbaBB(temp.data = data$temp.data,
                             var.names = data$var.names,
-                            origin.date = origin.date,
                             temp.params = temp.params,
                             stats::setNames(as.list(candidate.cw),names.params))
         pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))

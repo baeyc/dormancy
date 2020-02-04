@@ -6,7 +6,7 @@
 \usage{
 modelProbaBB(temp.data, var.names = list(date = "date", plant = "plant",
   session = "session", rep = "rep", temp = "temp.plant"), temp.params,
-  cufu.params, origin.date = "09-01")
+  cufu.params)
 }
 \arguments{
 \item{temp.data}{a data frame with the extracted temperatures experienced by the plant (as a result of the \code{\link{extractTemp}} function)}
@@ -15,8 +15,6 @@ modelProbaBB(temp.data, var.names = list(date = "date", plant = "plant",
 \code{var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant")}}
 
 \item{cufu.params}{a list of parameters for the CU and FU curves. It must contain the following parameters: \code{a.cu, b.cu, a.fu, b.fu, mu, s}}
-
-\item{origin.date}{the origin date when plants start accumulating temperatures, in the format "mm-dd" (e.g. "09-01" for 1st of September)}
 
 \item{temp.param}{a list of min and max temperatures for the CU and FU functions, containing \code{temp.min.cu, temp.min.fu,temp.max.cu, temp.max.fu}}
 }

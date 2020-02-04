@@ -6,7 +6,7 @@
 #' @aliases chilling CU
 #'
 #' @param temp.data a data frame with the dates and temperatures to accumulate
-#' @param var.names the name of the temperature and date variables, in the format \code{list(temp="temp.name",date="date.name")}
+#' @param var.names the name of the temperature and date variables, in the format \code{list(temp="temp.name",date="date.name",duration="duration.name")}
 #' @param temp.min the threshold above which the plant is accumulating chilling units
 #' @param temp.max the threshold below which the plant is accumulating chilling units
 #' @param mu the temperature at which the plant accumulates the highest number of chilling units
@@ -25,17 +25,16 @@
 #'
 #' @export chillingUnits
 chillingUnits <- function(temp.data,
-                          var.names=list(temp="temp",date="date"),
+                          var.names=list(temp="temp",date="date",duration="duration"),
                           temp.min=-5,temp.max=15,mu,s){
   # go back to Beta law parameters
   mu <- (mu-temp.min)/(temp.max-temp.min) # mu is given in the [temp.min,temp.max] scale
   a <- mu*(s-2) + 1
   b <- (s-2)*(1-mu) + 1
 
-  duration <- as.double(abs(difftime(temp.data[,var.names$date],dplyr::lead(temp.data[,var.names$date]),units="hours"))) # time in hours elapsing between two successive recordings
-
   x <- (temp.data[,var.names$temp]-temp.min)/(temp.max-temp.min) # to lies between 0 and 1
-  cu <- duration * dbeta(x,shape1 = a, shape2 = b)
+
+  cu <- temp.data[,var.names$duration] * dbeta(x,shape1 = a, shape2 = b)
 
   return(cu)
 }
