@@ -28,14 +28,26 @@ temp.data <- readRDS("data/temperaturePlants.rds")
 #for (f in files[1]){
 obs.data <- readRDS(paste0("data/",files[i]))
 
-calib <- mcmc(data = list(obs.data=obs.data,
+if (init){
+  calib <- mcmc(data = list(obs.data=obs.data,
                           temp.data=temp.data,
                           var.names=var.names),
               temp.params = temp.params,
-              control = list(proposal="AdGl",
-                             size = sizeMC))
+              control = list(proposal="AdGl",size = sizeMC))
 
-species <- gsub("obs.data.","",f)
-species <- gsub(".rds","",species)
+  species <- gsub("obs.data.","",f)
+  species <- gsub(".rds","",species)
 
-saveRDS(calib,paste0("data/results_",species,".rds"))
+  saveRDS(calib,paste0("data/results_",species,".rds"))
+}else{
+  calib <- readRDS(paste0("data/results",species,".rds"))
+
+  calib_add <- mcmc(data = list(obs.data=obs.data,
+                                temp.data=temp.data,
+                                var.names=var.names),
+                    temp.params = temp.params,
+                    control = list(proposal="AdGl",size = sizeMC))
+
+}
+
+
