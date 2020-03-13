@@ -4,11 +4,14 @@
 \alias{algoEM}
 \title{EM algorithm for probability of budburst}
 \usage{
-algoEM(data, temp.params = list(temp.min.cu = -10, temp.max.cu = 15,
-  temp.min.fu = 5, temp.max.fu = 35), init.params = list(a.cu = -2, b.cu
-  = 5, a.fu = 15, b.fu = 4, mu = 1500, s = 750), origin.date = "09-01",
-  control = list(proposal = "AdGl", mcsize = 5, saem.size1 = 10,
-  saem.size2 = 0))
+algoEM(
+  data,
+  temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu =
+    35),
+  init.params = list(a.cu = -2, b.cu = 5, a.fu = 15, b.fu = 4, mu = 1500, s = 750),
+  origin.date = "09-01",
+  control = list(proposal = "AdGl", mcsize = 5, saem.size1 = 10, saem.size2 = 0)
+)
 }
 \arguments{
 \item{data}{a list containing the plant and temperatures data}

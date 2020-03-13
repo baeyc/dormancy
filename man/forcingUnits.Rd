@@ -6,8 +6,14 @@
 \alias{CU}
 \title{Forcing units}
 \usage{
-forcingUnits(temp.data, var.names = list(temp = "temp", date = "date",
-  duration = "duration"), temp.min = 5, temp.max = 30, a, b)
+forcingUnits(
+  temp.data,
+  var.names = list(temp = "temp", date = "date", duration = "duration"),
+  temp.min = 5,
+  temp.max = 30,
+  a,
+  b
+)
 }
 \arguments{
 \item{temp.data}{a data frame with the dates and temperatures to accumulate}

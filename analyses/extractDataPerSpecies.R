@@ -31,11 +31,15 @@ var.names.deb <- list(session="session",plant="Individu",harv="date_collecte",bu
 temp.plants <- extractTemp(temp.outside,temp.inside,var.names.out,var.names.in,data.deb,var.names.deb)
 
 # add origin
+
+# 1. Fixed origin for all species and all year
 origin.date <- "09-01"
 year <- lubridate::year(temp.plants$date)
 dateOrigin <- paste0(year,"-",origin.date)
 doyOrigin <- lubridate::yday(lubridate::as_date(dateOrigin))
 temp.plants$before.origin <- ifelse(lubridate::yday(temp.plants$date) < doyOrigin, TRUE, FALSE)
+
+# 2. Origin depending on year and species
 
 # get elapsing time between two successive temperature recording
 duration <- as.double(abs(difftime(temp.plants$date,dplyr::lead(temp.plants$date),units="hours"))) # time in hours elapsing between two successive recordings

@@ -6,8 +6,14 @@
 \alias{CU}
 \title{Chilling units}
 \usage{
-chillingUnits(temp.data, var.names = list(temp = "temp", date = "date",
-  duration = "duration"), temp.min = -5, temp.max = 15, mu, s)
+chillingUnits(
+  temp.data,
+  var.names = list(temp = "temp", date = "date", duration = "duration"),
+  temp.min = -5,
+  temp.max = 15,
+  mu,
+  s
+)
 }
 \arguments{
 \item{temp.data}{a data frame with the dates and temperatures to accumulate}

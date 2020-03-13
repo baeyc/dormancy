@@ -4,17 +4,20 @@
 \alias{mcmc}
 \title{MCMC algorithm for Bayesian parameter estimation}
 \usage{
-mcmc(data = list(obs.data = obs.data, temp.data = temp.plants, var.names
-  = var.names), temp.params = list(temp.min.cu = -10, temp.max.cu = 15,
-  temp.min.fu = 5, temp.max.fu = 35), priors = list(a.cu = prior(distRNG
-  = "runif", hyperParams = list(min = -5, max = 5)), b.cu = prior(distRNG =
-  "runif", hyperParams = list(min = 2, max = 200)), a.fu = prior(distRNG =
-  "runif", hyperParams = list(min = 5, max = 20)), b.fu = prior(distRNG =
-  "runif", hyperParams = list(min = 1, max = 20)), mu = prior(distRNG =
-  "rnorm", hyperParams = list(mean = 1500, sd = 1000)), s = prior(distRNG =
-  "rnorm", hyperParams = list(mean = 750, sd = 500))),
-  control = list(proposal = "AdGl", size = 1e+05), continue = FALSE,
-  last.state = NULL)
+mcmc(
+  data = list(obs.data = obs.data, temp.data = temp.plants, var.names = var.names),
+  temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu =
+    35),
+  priors = list(a.cu = prior(distRNG = "runif", hyperParams = list(min = -5, max = 5)),
+    b.cu = prior(distRNG = "runif", hyperParams = list(min = 2, max = 200)), a.fu =
+    prior(distRNG = "runif", hyperParams = list(min = 5, max = 20)), b.fu = prior(distRNG
+    = "runif", hyperParams = list(min = 1, max = 20)), mu = prior(distRNG = "rnorm",
+    hyperParams = list(mean = 1500, sd = 1000)), s = prior(distRNG = "rnorm", hyperParams
+    = list(mean = 750, sd = 500))),
+  control = list(proposal = "AdGl", size = 1e+05),
+  continue = FALSE,
+  last.state = NULL
+)
 }
 \arguments{
 \item{data}{a list containing the plant and temperatures data}

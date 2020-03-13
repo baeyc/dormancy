@@ -43,7 +43,11 @@ modelProbaBB <- function(temp.data,
     dplyr::select(var.names$session,var.names$plant,var.names$rep,cu,fu) %>%
     dplyr::distinct()
 
-  dataPerPlantSessionRep$probaBB <- 1/(1+exp(-(dataPerPlantSessionRep$cu + dataPerPlantSessionRep$fu - cufu.params$mu)/cufu.params$s))
+  coeff.cu <- 1
+  if ("species" %in% names(temp.data)){
+    if (unique(temp.data$species) %in% c("corave","querob","betpen","cassat")) coeff.cu <- -1
+  }
+  dataPerPlantSessionRep$probaBB <- 1/(1+exp(-(dataPerPlantSessionRep$fu + coeff.cu * dataPerPlantSessionRep$cu - cufu.params$mu)/cufu.params$s))
 
   return(dataPerPlantSessionRep)
 }
