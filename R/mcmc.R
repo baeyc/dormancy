@@ -156,7 +156,15 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
         lambda[k] <- lambda[k] * exp(stoch.step*(ratio.cw - alpha.optim))
       }
     }
-  }
 
-  return(list(chain=chain,ar=apply(accept.rates,2,cumsum)/nrow(accept.rates),lambda=lambda,mean.and.var=list(mean.chain,var.chain)))
+  if (m %% (0.1*control$size) == 0){
+    res <- list(chain=chain,ar=apply(accept.rates,2,cumsum)/nrow(accept.rates),lambda=lambda,mean.and.var=list(mean.chain,var.chain))
+    saveRDS(res,paste0("results_",unique(data$obs.data$Espece),".rds"))
+  }
+ }
+
+  ar <- lapply(1:p,FUN = function(i){accept.rate[,i]/(1:nrow(accept.rates))})
+  ar <- do.call(cbind,ar)
+
+  return(list(chain=chain,ar=ar,lambda=lambda,mean.and.var=list(mean.chain,var.chain)))
 }
