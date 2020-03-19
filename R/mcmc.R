@@ -43,7 +43,7 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
   pij <- modelProbaBB(temp.data = data$temp.data,
                       var.names = data$var.names,
                       temp.params = temp.params,
-                      cufu.params =stats::setNames(as.list(init.state),names.params))
+                      cufu.params = stats::setNames(as.list(init.state),names.params))
   pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
   likelihood.current <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
   prior.current <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;

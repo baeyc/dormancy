@@ -41,7 +41,7 @@ extractTemp <- function(temp.outside,temp.inside,var.names.out,var.names.in,
 
       perRep <- lapply(1:length(time.meas), FUN= function(j){
         # create a data frame with the sequence of dates of the session and the temperatures experienced by plant (from temp.outside before harvest
-        # and from temp.indise after harvest)
+        # and from temp.inside after harvest)
         time.seq <- seq(ISOdate(min(yearsInSession),1,1,0,0,0,tz="GMT"), ISOdate(max(yearsInSession),04,30,tz="GMT"), "3 hours")
         d <- data.frame(session=k,plant=i,date=time.seq,rep=j,harv.date=time.meas[j],outside=(time.seq<time.meas[j]),end.date=end.meas[j])
 
