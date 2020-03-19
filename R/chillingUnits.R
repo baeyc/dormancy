@@ -32,10 +32,12 @@ chillingUnits <- function(temp.data,
   a <- mu*(s-2) + 1
   b <- (s-2)*(1-mu) + 1
 
-  x <- (temp.data[,var.names$temp]-temp.min)/(temp.max-temp.min) # to lies between 0 and 1
+  x <- unlist((temp.data[,var.names$temp]-temp.min)/(temp.max-temp.min)) # to lies between 0 and 1
+  # constante to normalize the beta distribution function and have a maximum reaching 1
+  max <- dbeta(mu,a,b)
 
-  cu <- temp.data[,var.names$duration] * dbeta(x,shape1 = a, shape2 = b)
+  cu <- temp.data[,var.names$duration] * dbeta(x,shape1 = a, shape2 = b)/max
 
-  return(cu)
+  return(unlist(cu))
 }
 

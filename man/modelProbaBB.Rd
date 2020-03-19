@@ -4,9 +4,13 @@
 \alias{modelProbaBB}
 \title{Model for probability of budburst}
 \usage{
-modelProbaBB(temp.data, var.names = list(date = "date", plant = "plant",
-  session = "session", rep = "rep", temp = "temp.plant"), temp.params,
-  cufu.params)
+modelProbaBB(
+  temp.data,
+  var.names = list(date = "date", plant = "plant", session = "session", rep = "rep",
+    temp = "temp.plant"),
+  temp.params,
+  cufu.params
+)
 }
 \arguments{
 \item{temp.data}{a data frame with the extracted temperatures experienced by the plant (as a result of the \code{\link{extractTemp}} function)}

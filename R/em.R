@@ -44,9 +44,10 @@ algoEM <- function(data,
                                                                        origin.date = origin.date,
                                                                        temp.params = temp.params,
                                                                        stats::setNames(as.list(chains[[i]][1,]),names.params));
-                                                     pij <- dplyr::inner_join(obs.data,pij);
+                                                     pij <- dplyr::inner_join(data$obs.data,pij);
                                                      exp(sum(pij$budburst*log(pij$probaBB)) + sum((1-pij$budburst)*log(1-pij$probaBB)))
                                                      })
+
 
   # Initialize sufficient statistics
   t1 <- lapply(1:n, FUN = function(i){ (-0.5)*t(chains[[i]])%*%chains[[i]]}) # for Gamma^-1 beta

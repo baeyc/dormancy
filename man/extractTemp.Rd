@@ -4,8 +4,14 @@
 \alias{extractTemp}
 \title{Temperatures per plant}
 \usage{
-extractTemp(temp.outside, temp.inside, var.names.out, var.names.in,
-  data.deb, var.names.deb)
+extractTemp(
+  temp.outside,
+  temp.inside,
+  var.names.out,
+  var.names.in,
+  data.deb,
+  var.names.deb
+)
 }
 \arguments{
 \item{temp.outside}{a data frame with the dates and temperatures outside the greenhouse}

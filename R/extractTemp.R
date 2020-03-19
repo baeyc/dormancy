@@ -33,15 +33,17 @@ extractTemp <- function(temp.outside,temp.inside,var.names.out,var.names.in,
       temp.out.session <- temp.outside[lubridate::year(temp.outside[,var.names.out$date])%in%yearsInSession,]
       temp.in.session <- temp.inside[lubridate::year(temp.inside[,var.names.in$date])%in%yearsInSession,]
       data.deb.session <- data.deb[data.deb[,var.names.deb$session]==k & data.deb[,var.names.deb$plant]==i,]
+      data.deb.session$obs.time <- pmax(data.deb.session$delai_max,data.deb.session$delai_deb, na.rm=T)
 
       # get the dates at which data were collected for plant i at sessions k
-      time.meas <- unique(data.deb.session[,var.names.deb$harv])
+      time.meas <- data.deb.session[,var.names.deb$harv]
+      end.meas <- time.meas + lubridate::ddays(data.deb.session$obs.time)
 
       perRep <- lapply(1:length(time.meas), FUN= function(j){
         # create a data frame with the sequence of dates of the session and the temperatures experienced by plant (from temp.outside before harvest
-        # and from temp.indise after harvest)
+        # and from temp.inside after harvest)
         time.seq <- seq(ISOdate(min(yearsInSession),1,1,0,0,0,tz="GMT"), ISOdate(max(yearsInSession),04,30,tz="GMT"), "3 hours")
-        d <- data.frame(session=k,plant=i,date=time.seq,rep=j,harv.date=time.meas[j],outside=(time.seq<time.meas[j]))
+        d <- data.frame(session=k,plant=i,date=time.seq,rep=j,harv.date=time.meas[j],outside=(time.seq<time.meas[j]),end.date=end.meas[j])
 
         # merge with temperature data
         d <- merge(d,temp.out.session[,c(var.names.out$temp,var.names.out$date)],by.x=c("date"),by.y=var.names.out$date)
@@ -49,6 +51,9 @@ extractTemp <- function(temp.outside,temp.inside,var.names.out,var.names.in,
         d <- merge(d,temp.in.session[,c(var.names.in$temp,var.names.in$date)],by.x=c("date"),by.y=var.names.in$date)
         names(d)[names(d)==var.names.in$temp] <- "temp.in"
         d$temp.plant <- ifelse(d$outside,d$temp.out,d$temp.in)
+
+        d$temp.plant[d$date>d$end.date] <- NA
+        d <- na.omit(d)
 
         df <- rbind(df,d)
         return(df)

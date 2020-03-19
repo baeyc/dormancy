@@ -22,9 +22,10 @@ forcingUnits <- function(temp.data,
                          var.names=list(temp="temp",date="date",duration="duration"),
                          temp.min=5,temp.max=30,a,b){
 
-  x <- temp.data[,var.names$temp]
+  x <- unlist(temp.data[,var.names$temp])
   fu <- temp.data[,var.names$duration] * ifelse(temp.min <= x & x <= temp.max,1/(1+exp(-(x-a)/b)),0)
+  names(fu) <- "fu"
 
-  return(fu)
+  return(unlist(fu))
 
 }

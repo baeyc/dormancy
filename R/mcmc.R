@@ -20,7 +20,9 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
                                  mu = prior(distRNG="rnorm", hyperParams=list(mean=1500, sd=1000)),
                                  s = prior(distRNG="rnorm", hyperParams=list(mean=750, sd=500))),
                    control = list(proposal="AdGl",
-                                  size=100000)){
+                                  size=100000),
+                   continue = FALSE,
+                   last.state = NULL){
   # Initialize algorithm
   cat("Initialize MCMC algorithm...\n")
   names.params <- names(priors)
@@ -41,13 +43,36 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
   pij <- modelProbaBB(temp.data = data$temp.data,
                       var.names = data$var.names,
                       temp.params = temp.params,
-                      cufu.params =stats::setNames(as.list(init.state),names.params))
+                      cufu.params = stats::setNames(as.list(init.state),names.params))
   pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
   likelihood.current <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
   prior.current <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
                                                                     substr(dname,1,1) <- "d"
                                                                     do.call(dname, c(list(x = init.state[i]), priors[[i]]@hyperParams))})
   prior.current <- prod(prior.current)
+
+
+  # if we continue the chain from a previous stopped state
+  if (continue){
+    init.state <- tail(last.state$chain,1)
+    mean.chain <- last.state$mean.and.var[[1]]
+    var.chain <- last.state$mean.and.var[[2]]
+
+    lambda <- last.state$lambda
+    accept.rates <- tail(last.state$ar,1)
+
+    # Compute likelihood and priors values for initial state
+    pij <- modelProbaBB(temp.data = data$temp.data,
+                        var.names = data$var.names,
+                        temp.params = temp.params,
+                        cufu.params =stats::setNames(as.list(init.state),names.params))
+    pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
+    likelihood.current <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
+    prior.current <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
+    substr(dname,1,1) <- "d"
+    do.call(dname, c(list(x = init.state[i]), priors[[i]]@hyperParams))})
+    prior.current <- prod(prior.current)
+  }
 
   # Generate MCMC
   chain <- matrix(init.state,nrow=1,ncol=p)

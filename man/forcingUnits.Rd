@@ -6,13 +6,19 @@
 \alias{CU}
 \title{Forcing units}
 \usage{
-forcingUnits(temp.data, var.names = list(temp = "temp", date = "date",
-  duration = "duration"), temp.min = 5, temp.max = 30, a, b)
+forcingUnits(
+  temp.data,
+  var.names = list(temp = "temp", date = "date", duration = "duration"),
+  temp.min = 5,
+  temp.max = 30,
+  a,
+  b
+)
 }
 \arguments{
 \item{temp.data}{a data frame with the dates and temperatures to accumulate}
 
-\item{var.names}{the name of the temperature and date variables, in the format \code{list(temp="temp.name",date="date.name")}}
+\item{var.names}{the name of the temperature and date variables, in the format \code{list(temp="temp.name",date="date.name",duration="duration.name")}}
 
 \item{temp.min}{the threshold above which the plant is accumulating chilling units}
 
