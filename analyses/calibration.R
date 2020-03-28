@@ -50,6 +50,6 @@ calib <- mcmc(data = list(obs.data=obs.data,
 species <- gsub("obs.data.","",files[i])
 species <- gsub(".rds","",species)
 
-saveRDS(calib,paste0("data/results_",species,".rds"))
+saveRDS(list(calib=calib,priors=priors),paste0("data/results_",species,".rds"))
 
 
