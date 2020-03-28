@@ -21,8 +21,8 @@ prior <- setClass("prior",
 
                   validity=function(object)
                   {
-                    if (!object@distRNG%in%c("fixed","rnorm","rbeta","rlnorm","rlnormTrunc","rchisq","rexp","rf","rgamma","rt","runif","rweibull")){
-                      stop("Chosen prior is not currently supported. Please choose between: rnorm, rbeta, rlnorm, rchisq, rexp, rf, rgamma, rt, runif, rweibull")
+                    if (!object@distRNG%in%c("fixed","rnorm","rbeta","rlnorm","rlnormTrunc","rchisq","rexp","rf","rgamma","rt","runif","rweibull","rtruncnorm")){
+                      stop("Chosen prior is not currently supported. Please choose between: rnorm, rbeta, rlnorm, rchisq, rexp, rf, rgamma, rt, runif, rweibull, rtruncnorm")
                     }
                     return(TRUE)
                   }
