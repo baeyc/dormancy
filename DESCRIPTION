@@ -19,4 +19,5 @@ Imports:
     dplyr,
     mvtnorm,
     parallel,
-    foreach
+    foreach,
+    truncnorm
