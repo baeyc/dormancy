@@ -41,9 +41,9 @@ obs.data <- readRDS(paste0("data/",files[i]))
 
 calib <- mcmc(data = list(obs.data=obs.data,
                           temp.data=temp.data,
-                          priors=priors,
                           var.names=var.names),
               temp.params = temp.params,
+	      priors = priors,
               control = list(proposal="AdGl",
                              size = sizeMC))
 
