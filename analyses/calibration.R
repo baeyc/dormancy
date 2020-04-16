@@ -17,8 +17,8 @@ var.names = list(date="date",plant="plant",session="session",rep="rep",temp="tem
 temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 0, temp.max.fu = 35)
 priors = list(a.cu = prior(distRNG="rnorm", hyperParams=list(mean=7, sd=3)),
               b.cu = prior(distRNG="rtruncnorm", hyperParams=list(a=2, mean=100, sd=40)),
-              a.fu = prior(distRNG="rnorm", hyperParams=list(mean=5, sd=4)),
-              b.fu = prior(distRNG="rnorm", hyperParams=list(mean=2.5, sd=1)),
+              a.fu = prior(distRNG="rlnorm", hyperParams=list(mean=log(5), sd=0.5)),
+              b.fu = prior(distRNG="rlnorm", hyperParams=list(meanlog=log(2.5), sdlog=0.5)),
               mu = prior(distRNG="rnorm", hyperParams=list(mean=500, sd=150)),
               s = prior(distRNG="rtruncnorm", hyperParams=list(a=0,mean=50, sd=20)))
 temp.data <- readRDS("data/temperaturePlants.rds")
