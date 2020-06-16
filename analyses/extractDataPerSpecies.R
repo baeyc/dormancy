@@ -72,5 +72,5 @@ species <- unique(rep.session$Espece)
 data.per.species <- lapply(species,FUN = function(s){rep.session[rep.session$Espece==s,]})
 names(data.per.species) <- species
 
-lapply(species,FUN=function(s){saveRDS(data.per.species[[s]],paste0("data/obs.data.",s,".rds"))})
+lapply(1:length(species),FUN=function(s){saveRDS(data.per.species[[s]],paste0("data/obs.data.",species[s],".rds"))})
 
