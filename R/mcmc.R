@@ -11,14 +11,10 @@
 #' @param control a list of options for the algorithm
 #'
 #' @export mcmc
+#' @import truncnorm
 mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=var.names),
                    temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu = 35),
-                   priors = list(a.cu = prior(distRNG="runif", hyperParams=list(min=-5, max=5)),
-                                 b.cu = prior(distRNG="runif", hyperParams=list(min=2, max=200)),
-                                 a.fu = prior(distRNG="runif", hyperParams=list(min=5, max=20)),
-                                 b.fu = prior(distRNG="runif", hyperParams=list(min=1, max=20)),
-                                 mu = prior(distRNG="rnorm", hyperParams=list(mean=1500, sd=1000)),
-                                 s = prior(distRNG="rnorm", hyperParams=list(mean=750, sd=500))),
+                   priors,
                    control = list(proposal="AdGl",
                                   size=100000),
                    continue = FALSE,
@@ -26,30 +22,38 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
   # Initialize algorithm
   cat("Initialize MCMC algorithm...\n")
   names.params <- names(priors)
-  init.state <- sapply(1:length(names.params), FUN = function(i){do.call(priors[[i]]@distRNG, c(list(n = 1), priors[[i]]@hyperParams))})
-  names(init.state) <- names.params
   p <- length(names.params)
-  print(init.state)
-
   proposal <- control$proposal
+
+  # Compute likelihood and priors values for initial state
+  likelihood.current <- 0
+  truc <- 1
+  while (likelihood.current==0){
+    print(truc)
+    init.state <- sapply(1:length(names.params), FUN = function(i){do.call(priors[[i]]@distRNG, c(list(n = 1), priors[[i]]@hyperParams))})
+    names(init.state) <- names.params
+
+    pij <- modelProbaBB(temp.data = data$temp.data,
+                        var.names = data$var.names,
+                        temp.params = temp.params,
+                        cufu.params = stats::setNames(as.list(init.state),names.params))
+    pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
+    likelihood.current <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
+    truc <- truc+1
+    print(init.state)
+  }
+
+  print(init.state)
+  prior.current <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
+                                                                    substr(dname,1,1) <- "d"
+                                                                    do.call(dname, c(list(x = init.state[i]), priors[[i]]@hyperParams))})
+  prior.current <- prod(prior.current)
 
   mean.chain <- init.state
   var.chain <- diag((2.38/sqrt(p))*rep(1,p))
   lambda <- rep(1,p)
   stoch.step.power <- 0.6
   accept.rates <- matrix(rep(0,p),nr=1,nc=p)
-
-  # Compute likelihood and priors values for initial state
-  pij <- modelProbaBB(temp.data = data$temp.data,
-                      var.names = data$var.names,
-                      temp.params = temp.params,
-                      cufu.params = stats::setNames(as.list(init.state),names.params))
-  pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
-  likelihood.current <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
-  prior.current <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
-                                                                    substr(dname,1,1) <- "d"
-                                                                    do.call(dname, c(list(x = init.state[i]), priors[[i]]@hyperParams))})
-  prior.current <- prod(prior.current)
 
 
   # if we continue the chain from a previous stopped state
@@ -163,7 +167,7 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
   }
  }
 
-  ar <- lapply(1:p,FUN = function(i){accept.rate[,i]/(1:nrow(accept.rates))})
+  ar <- lapply(1:p,FUN = function(i){accept.rates[,i]/(1:nrow(accept.rates))})
   ar <- do.call(cbind,ar)
 
   return(list(chain=chain,ar=ar,lambda=lambda,mean.and.var=list(mean.chain,var.chain)))
