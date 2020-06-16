@@ -24,7 +24,6 @@ forcingUnits <- function(temp.data,
 
   x <- unlist(temp.data[,var.names$temp])
   fu <- temp.data[,var.names$duration] * ifelse(temp.min <= x & x <= temp.max,1/(1+exp(-(x-a)/b)),0)
-  names(fu) <- "fu"
 
   return(unlist(fu))
 

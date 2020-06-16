@@ -15,12 +15,18 @@ species <- gsub(".rds","",species)
 origin.date = "09-01"
 var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant",duration="duration")
 temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 0, temp.max.fu = 35)
-priors = list(a.cu = prior(distRNG="rnorm", hyperParams=list(mean=7, sd=3)),
-              b.cu = prior(distRNG="rtruncnorm", hyperParams=list(a=2, mean=100, sd=40)),
-              a.fu = prior(distRNG="rlnorm", hyperParams=list(mean=log(5), sd=0.5)),
-              b.fu = prior(distRNG="rlnorm", hyperParams=list(meanlog=log(2.5), sdlog=0.5)),
-              mu = prior(distRNG="rnorm", hyperParams=list(mean=500, sd=150)),
-              s = prior(distRNG="rtruncnorm", hyperParams=list(a=0,mean=50, sd=20)))
+#priors = list(a.cu = prior(distRNG="rtruncnorm", hyperParams=list(a=-10, b=15, mean=7, sd=3)),
+#              b.cu = prior(distRNG="rtruncnorm", hyperParams=list(a=2, mean=100, sd=40)),
+#              a.fu = prior(distRNG="rlnorm", hyperParams=list(mean=log(5), sd=0.5)),
+#              b.fu = prior(distRNG="rlnorm", hyperParams=list(meanlog=log(2.5), sdlog=0.5)),
+#              mu = prior(distRNG="rnorm", hyperParams=list(mean=2000, sd=150)),
+#              s = prior(distRNG="rtruncnorm", hyperParams=list(a=0,mean=50, sd=20)))
+priors = list(a.cu = prior(distRNG="runif", hyperParams=list(min=-10, max=15)),
+              b.cu = prior(distRNG="runif", hyperParams=list(min=2, max=500)),
+              a.fu = prior(distRNG="runif", hyperParams=list(min=5, max=30)),
+              b.fu = prior(distRNG="runif", hyperParams=list(min=0, max=5)),
+              mu = prior(distRNG="runif", hyperParams=list(min=500, max=5000)),
+              s = prior(distRNG="runif", hyperParams=list(min=10, max=500)))
 temp.data <- readRDS("data/temperaturePlants.rds")
 
 # # Aggregate temperatures: one for the day and one for the night
@@ -38,6 +44,7 @@ temp.data$species <- gsub('[0-9]+', '', temp.data$plant)
 
 #for (f in files[1]){
 obs.data <- readRDS(paste0("data/",files[i]))
+temp.data <- temp.data[temp.data$species==species[i],]
 
 calib <- mcmc(data = list(obs.data=obs.data,
                           temp.data=temp.data,
