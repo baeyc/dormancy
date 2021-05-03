@@ -6,8 +6,13 @@
 \usage{
 mcmc(
   data = list(obs.data = obs.data, temp.data = temp.plants, var.names = var.names),
+<<<<<<< HEAD
+  temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu =
+    35),
+=======
   temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu
     = 35),
+>>>>>>> 88cf9d36c3036eedd57998d46bf020bc05110477
   priors,
   control = list(proposal = "AdGl", size = 1e+05),
   continue = FALSE,
