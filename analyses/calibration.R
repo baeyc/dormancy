@@ -12,7 +12,8 @@ species <- gsub("obs.data.","",files)
 species <- gsub(".rds","",species)
 
 # Parameters shared by all the species
-origin.date = "09-01"
+origin.date.cu = "09-01"
+origin.date.fu = "12-01"
 var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant",duration="duration")
 temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 0, temp.max.fu = 35)
 #priors = list(a.cu = prior(distRNG="rtruncnorm", hyperParams=list(a=-10, b=15, mean=7, sd=3)),

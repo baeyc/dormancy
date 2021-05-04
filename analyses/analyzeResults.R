@@ -18,6 +18,18 @@ library(reshape)
 
 burnin <- 10000
 
+# Prior
+priors <- readRDS(paste0(dir,files[1]))$prior # same priors used for all the species, we can only look at the first one
+table_priors <- lapply(priors,FUN = function(p){
+  temp <- data.frame(p@distRNG,t(unlist(p@hyperParams)))
+  names(temp) <- c("dist",names(p@hyperParams))
+  return(temp)
+})
+table_priors <- do.call(dplyr::bind_rows,table_priors)
+table_priors$params <- names(priors)
+
+write.table(table_priors,paste0(dir,"priors.txt"),quote=F,row.names = F)
+
 # Posterior mean
 postmean <- lapply(1:length(files), FUN = function(i){
   calib <- readRDS(paste0(dir,files[i]))$calib
@@ -68,17 +80,18 @@ for (i in 1:6){
   ci95merged <- cbind(ci95merged,paste0("[",format(ci952[,2*i],digits=3)," ; ",format(ci952[,2*i+1],digits=3),"]"))
 }
 ci95merged <- as.data.frame(ci95merged)
-names(ci95merged) <- c("species",paste0(c("a.cu","b.cu","a.fu","b.fu","mu","s"),"_95CI"))
+names(ci95merged) <- c("species",paste0(c("a.cu","a.fu","b.cu","b.fu","mu","s"),"_95CI"))
 
 map_ci95_2 <- merge(map,ci95merged)
 
 library(xtable)
-print(xtable(map_ci95_2[,c(1,2,8,3,9,4,10,5,11)]), include.rownames=F)
+print(xtable(map_ci95_2[,c(1,2,8,3,10,4,9,5,11)]), include.rownames=F)
 print(xtable(map_ci95_2[,c(1,6,12,7,13)]), include.rownames=F)
 
 # Compare predictions using posterior means and MAP with observations
 temp.data <- readRDS("data/temperaturePlants.rds")
-origin.date = "09-01"
+origin.date.cu = "09-01"
+origin.date.fu = "12-01"
 var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant",duration="duration")
 temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu = 35)
 names.params <- c("a.cu","b.cu","a.fu","b.fu","mu","s")
@@ -138,7 +151,7 @@ pred_plot <- ggplot(data=dpredall[dpredall$variable=="probaBB.map",],aes(x=as.fa
      guides(fill = FALSE) + facet_wrap(~title,nc=4,nr=3) +
      ylim(c(0,1)) + theme(strip.text = element_text(face = "italic"))
 pred_plot
-ggsave("~/Documents/Articles/En cours/Dormancy/figures/pred_plot.pdf",pred_plot,height = 7, width = 8.5)
+ggsave("~/Documents/Articles/En cours/Dormancy/figures/pred_plot_MAP.pdf",pred_plot,height = 7, width = 8.5)
 
 rocf <- ggplot(dpredall[dpredall$variable=="probaBB.map",],aes(m=value,d=budburst)) + geom_roc(labels=F,pointsize=0,size=0.5) +
   facet_wrap(~title,nc=4,nr=3)
@@ -155,7 +168,7 @@ roc <- rocf + style_roc(theme = theme_gray,xlab = "1 - Specificity") +
  #annotate("text", x = .75, y = .25, label = paste("AUC =", auc$AUC))#, color=col$colour[1])
  #annotate("text", x = .75, y = .2, label = paste("AUC =", round(calc_auc(roc)$AUC[2], 2)), color=col$colour[2])
 roc
-ggsave("~/Documents/Articles/En cours/Dormancy/figures/roc_all.pdf",roc,height = 7, width = 8.5)
+ggsave("~/Documents/Articles/En cours/Dormancy/figures/roc_all_MAP.pdf",roc,height = 7, width = 8.5)
 
 
 # Plot estimated CU+FU as a function of time
@@ -177,8 +190,8 @@ lapply(1:length(files), FUN = function(i){
                                a = params1$a.fu, b = params1$b.fu)
 
   # do not account for temperatures accumulated between 01/01 and origin.date
-  data$fu.mean[data$before.origin] <- 0
-  data$cu.mean[data$before.origin] <- 0
+  data$fu.mean[data$before.origin.cu] <- 0
+  data$cu.mean[data$before.origin.cu] <- 0
 
   data <- data %>% dplyr::group_by_at(c(var.names$session,var.names$plant,var.names$rep)) %>% dplyr::mutate(cu.cum = cumsum(cu.mean), fu.cum = cumsum(fu.mean))
   dataCU <- data %>% dplyr::select(!fu.cum)
@@ -194,14 +207,19 @@ lapply(1:length(files), FUN = function(i){
 
   dataBB <- data %>% dplyr::select(session,rep,plant,harv.date,budburst) %>% dplyr::distinct()
 
-  p1 <- ggplot(data,aes(x=date,y=cu.cum,col=as.factor(rep)),group=as.factor(rep)) + geom_line() +
-    facet_wrap(~session,scales = "free") + scale_color_discrete(name="Branch")
+  data$month <- lubridate::month(data$date)
+  data$year <- lubridate::year(data$date)
+  dataCUFU$month <- lubridate::month(dataCUFU$date)
+  dataCUFU$year <- lubridate::year(dataCUFU$date)
 
-  p12 <- ggplot(dataCUFU,aes(x=date,y=units,col=as.factor(rep),linetype=type),group=as.factor(rep)) + geom_line() +
-    facet_wrap(~session,scales = "free") + scale_color_discrete(name="Branch") + scale_linetype_discrete(name="Units")
+  p1 <- ggplot(data[data$month>=9,],aes(x=date,y=cu.cum,col=as.factor(rep)),group=as.factor(rep)) + geom_line() +
+    facet_wrap(~year,scales = "free") + scale_color_discrete(name="Branch")
 
-  p2 <- ggplot(data,aes(x=date,y=fu.cum,col=as.factor(rep)),group=as.factor(rep)) + geom_line() +
-    facet_wrap(~session,scales = "free") + scale_color_discrete(name="Branch")
+  p12 <- ggplot(dataCUFU[dataCUFU$month>=9,],aes(x=date,y=units,col=as.factor(rep),linetype=type),group=as.factor(rep)) + geom_line() +
+    facet_wrap(~year,scales = "free") + scale_color_discrete(name="Branch") + scale_linetype_discrete(name="Units")
+
+  p2 <- ggplot(data[data$month>=9,],aes(x=date,y=fu.cum,col=as.factor(rep)),group=as.factor(rep)) + geom_line() +
+    facet_wrap(~year,scales = "free") + scale_color_discrete(name="Branch")
   ggsave(paste0(dir,"/cu.cum_",species[i],".pdf"),p1,height = 6, width = 12)
   ggsave(paste0(dir,"fu.cum_",species[i],".pdf"),p2,height = 6, width = 12)
   ggsave(paste0(dir,"cufu.cum_",species[i],".pdf"),p12,height = 6, width = 12)

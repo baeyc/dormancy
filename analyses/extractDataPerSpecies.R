@@ -33,11 +33,15 @@ temp.plants <- extractTemp(temp.outside,temp.inside,var.names.out,var.names.in,d
 # add origin
 
 # 1. Fixed origin for all species and all year
-origin.date <- "09-01"
+origin.date.cu <- "09-01"
+origin.date.fu <- "12-01"
 year <- lubridate::year(temp.plants$date)
-dateOrigin <- paste0(year,"-",origin.date)
-doyOrigin <- lubridate::yday(lubridate::as_date(dateOrigin))
-temp.plants$before.origin <- ifelse(lubridate::yday(temp.plants$date) < doyOrigin, TRUE, FALSE)
+dateOriginCU <- paste0(year,"-",origin.date.cu)
+dateOriginFU <- paste0(year,"-",origin.date.fu)
+doyOriginCU <- lubridate::yday(lubridate::as_date(dateOriginCU))
+doyOriginFU <- lubridate::yday(lubridate::as_date(dateOriginFU))
+temp.plants$before.origin.cu <- ifelse(lubridate::yday(temp.plants$date) < doyOriginCU, TRUE, FALSE)
+temp.plants$before.origin.fu <- ifelse(lubridate::yday(temp.plants$date) < doyOriginFU, TRUE, FALSE)
 
 # 2. Origin depending on year and species
 
@@ -50,8 +54,7 @@ saveRDS(temp.plants,"data/temperaturePlants.rds")
 
 # Compute the probability of budburst for each plant, as a function of accumulated CU and FU
 probaBB <- modelProbaBB(temp.data = temp.plants,
-                        origin.date = "09-01",
-                        var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant"),
+                        var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant",duration="duration"),
                         temp.params = list(temp.min.cu = -10, temp.max.cu = 15, temp.min.fu = 5, temp.max.fu = 35),
                         cufu.params = list(a.cu = 5, b.cu = 5, a.fu = 15, b.fu = 4, mu = 1500, s = 750))
 
