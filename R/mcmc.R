@@ -29,7 +29,7 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
   likelihood.current <- 0
   truc <- 1
   while (likelihood.current==0){
-    print(truc)
+    #print(truc)
     init.state <- sapply(1:length(names.params), FUN = function(i){do.call(priors[[i]]@distRNG, c(list(n = 1), priors[[i]]@hyperParams))})
     names(init.state) <- names.params
 
@@ -40,10 +40,10 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
     pij <- dplyr::inner_join(data$obs.data,pij,by = c("session", "plant", "rep"))
     likelihood.current <- exp(sum(dbinom(pij$budburst,1,pij$probaBB,log = TRUE)))
     truc <- truc+1
-    print(init.state)
+    #print(init.state)
   }
 
-  print(init.state)
+  #print(init.state)
   prior.current <- sapply(1:length(names.params), FUN = function(i){dname <- priors[[i]]@distRNG;
                                                                     substr(dname,1,1) <- "d"
                                                                     do.call(dname, c(list(x = init.state[i]), priors[[i]]@hyperParams))})
@@ -79,6 +79,7 @@ mcmc <- function(data=list(obs.data=obs.data, temp.data=temp.plants, var.names=v
   }
 
   # Generate MCMC
+  cat("Running MCMC...\n")
   chain <- matrix(init.state,nrow=1,ncol=p)
   pb <- txtProgressBar(min=1,max=control$size,style = 3)
   for (m in 1:control$size){
