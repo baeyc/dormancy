@@ -15,7 +15,7 @@
 #' @importFrom dplyr %>%
 #' @export modelProbaBB
 modelProbaBB <- function(temp.data,
-                         var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant"),
+                         var.names = list(date="date",plant="plant",session="session",rep="rep",temp="temp.plant",duration="duration"),
                          temp.params,
                          cufu.params){
   # create a copy of temp.data
@@ -32,8 +32,8 @@ modelProbaBB <- function(temp.data,
                           a = cufu.params$a.fu, b = cufu.params$b.fu)
 
   # do not account for temperatures accumulated between 01/01 and origin.date
-  data$fu[data$before.origin] <- 0
-  data$cu[data$before.origin] <- 0
+  data$fu[data$before.origin.fu] <- 0
+  data$cu[data$before.origin.cu] <- 0
 
   data <- data %>% dplyr::group_by_at(c(var.names$session,var.names$plant,var.names$rep)) %>% dplyr::mutate(cu.cum = cumsum(cu), fu.cum = cumsum(fu))
 
@@ -44,9 +44,9 @@ modelProbaBB <- function(temp.data,
     dplyr::distinct()
 
   coeff.cu <- 1
-  if ("species" %in% names(temp.data)){
-    if (unique(temp.data$species) %in% c("corave","querob","betpen","cassat")) coeff.cu <- -1
-  }
+  #if ("species" %in% names(temp.data)){
+  #  if (unique(temp.data$species) %in% c("corave","querob","betpen","cassat")) coeff.cu <- -1
+  #}
   dataPerPlantSessionRep$probaBB <- 1/(1+exp(-(dataPerPlantSessionRep$fu + coeff.cu * dataPerPlantSessionRep$cu - cufu.params$mu)/cufu.params$s))
 
   return(dataPerPlantSessionRep)

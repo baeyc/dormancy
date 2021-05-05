@@ -7,7 +7,7 @@
 modelProbaBB(
   temp.data,
   var.names = list(date = "date", plant = "plant", session = "session", rep = "rep",
-    temp = "temp.plant"),
+    temp = "temp.plant", duration = "duration"),
   temp.params,
   cufu.params
 )
